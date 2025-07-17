@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "668765400203",
+    "project_id": "myspot-26cfd",
+    "storage_bucket": "myspot-26cfd.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:668765400203:android:8da9bdb9792e69f14cb88e",
+        "android_client_info": {
+          "package_name": "com.kanek.myspot.myspot_02"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC8lClJ1k9f2DcSeCYAwnkRNA14buexvBs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
