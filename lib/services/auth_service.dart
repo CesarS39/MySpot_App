@@ -38,10 +38,14 @@ class AuthService {
     await firebaseAuth.sendPasswordResetEmail(email: email);
   }
 
+  // ✅ MÉTODO CORREGIDO
   Future<void> updateUsername({required String username}) async {
     final user = currentUser;
     if (user != null) {
       await user.updateDisplayName(username);
+      await user.reload(); // 🔥 ESTO ES LO QUE FALTABA
+      // Opcionalmente, puedes notificar el cambio
+      authService.notifyListeners();
     }
   }
 

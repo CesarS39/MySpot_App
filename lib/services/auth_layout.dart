@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../screens/loading/loading_screen.dart';
-import '../screens/home/home_screen.dart';
+import '../screens/home/main_screen.dart';
 import '../screens/welcome_screen.dart';
 
 
@@ -27,7 +27,7 @@ class AuthLayout extends StatelessWidget {
             if (snapshot.connectionState == ConnectionState.waiting) {
               widget = AppLoadingPage();  // Mientras se espera el estado de autenticación
             } else if (snapshot.hasData) {
-              widget = const HomeScreen();  // Si el usuario está autenticado, ir a HomeScreen
+              widget = const MainScreen();  // Si el usuario está autenticado, ir a HomeScreen
             } else {
               widget = pageIfNotConnected ?? const WelcomeScreen();  // Si no está autenticado, ir a WelcomeScreen
             }
