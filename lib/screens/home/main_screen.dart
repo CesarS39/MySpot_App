@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'home_screen.dart';
 import '../profile/profile_screen.dart';
 import '../../widgets/navigation/custom_bottom_navbar.dart';
+import 'location_screen.dart'; // ✅ Importamos la pantalla del mapa
 
 class MainScreen extends StatefulWidget {
   final int initialIndex;
@@ -19,8 +20,8 @@ class DummyScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(
-        color: Colors.white, // Fondo blanco para las DummyScreen también
+      decoration: const BoxDecoration(
+        color: Colors.white,
       ),
       child: Scaffold(
         backgroundColor: Colors.transparent,
@@ -53,7 +54,7 @@ class _MainScreenState extends State<MainScreen> {
 
   final List<Widget> _pages = const [
     HomeScreen(),
-    DummyScreen(title: 'Ubicación'),
+    LocationScreen(), // ✅ Aquí se muestra el mapa
     DummyScreen(title: 'Favoritos'),
     ProfileScreen(),
   ];
@@ -61,7 +62,7 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white, // 🔥 Fondo blanco solo para el área de la navbar
+      backgroundColor: Colors.white,
       body: _pages[_currentIndex],
       bottomNavigationBar: CustomBottomNavBar(
         currentIndex: _currentIndex,

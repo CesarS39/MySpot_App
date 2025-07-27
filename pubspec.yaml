@@ -10,12 +10,13 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  cupertino_icons: ^1.0.8
   geolocator: ^14.0.2
   geocoding: ^4.0.0
-  cupertino_icons: ^1.0.8
   firebase_core: ^3.15.1
   firebase_auth: ^5.6.2
   shared_preferences: ^2.0.15
+  google_maps_flutter: ^2.5.0 # Mapa de Google integrado
 
 dev_dependencies:
   flutter_test:
@@ -30,4 +31,3 @@ flutter:
     - lib/images/grutas.jpg
     - lib/images/mountain.jpg
     - assets/icon/app_icon.png
-
