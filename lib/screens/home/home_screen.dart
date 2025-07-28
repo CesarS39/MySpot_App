@@ -12,23 +12,25 @@ class Place {
   final String imagePath;
   final double rating;
   final bool isFavorite;
+  final String category;
 
   const Place({
     required this.title,
     required this.imagePath,
     required this.rating,
     required this.isFavorite,
+    required this.category,
   });
 }
 
 const List<Place> popularPlaces = [
-  Place(title: 'Grutas de Tolantongo', imagePath: 'lib/images/grutas.jpg', rating: 4.5, isFavorite: true),
-  Place(title: 'Basílica de Guadalupe', imagePath: 'lib/images/grutas.jpg', rating: 4.7, isFavorite: false),
-  Place(title: 'Xcaret Park', imagePath: 'lib/images/grutas.jpg', rating: 4.8, isFavorite: true),
-  Place(title: 'Museo Frida Kahlo', imagePath: 'lib/images/grutas.jpg', rating: 4.6, isFavorite: false),
-  Place(title: 'Chichén Itzá', imagePath: 'lib/images/grutas.jpg', rating: 4.9, isFavorite: true),
-  Place(title: 'Cenote Ik Kil', imagePath: 'lib/images/grutas.jpg', rating: 4.4, isFavorite: false),
-  Place(title: 'Teotihuacán', imagePath: 'lib/images/grutas.jpg', rating: 4.7, isFavorite: true),
+  Place(title: 'Grutas de Tolantongo', imagePath: 'lib/images/grutas.jpg', rating: 4.5, isFavorite: true, category: 'Adventure'),
+  Place(title: 'Basílica de Guadalupe', imagePath: 'lib/images/grutas.jpg', rating: 4.7, isFavorite: false, category: 'Culture'),
+  Place(title: 'Xcaret Park', imagePath: 'lib/images/grutas.jpg', rating: 4.8, isFavorite: true, category: 'Nature'),
+  Place(title: 'Museo Frida Kahlo', imagePath: 'lib/images/grutas.jpg', rating: 4.6, isFavorite: false, category: 'Culture'),
+  Place(title: 'Chichén Itzá', imagePath: 'lib/images/grutas.jpg', rating: 4.9, isFavorite: true, category: 'Culture'),
+  Place(title: 'Cenote Ik Kil', imagePath: 'lib/images/grutas.jpg', rating: 4.4, isFavorite: false, category: 'Nature'),
+  Place(title: 'Teotihuacán', imagePath: 'lib/images/grutas.jpg', rating: 4.7, isFavorite: true, category: 'Culture'),
 ];
 
 class HomeScreen extends StatefulWidget {
@@ -44,6 +46,9 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _ubicacionAutorizada = false;
   List<String> _ciudadesCercanas = [];
   String? _ciudadSeleccionada = 'Near places';
+
+  String _categoriaSeleccionada = 'Location';
+  final List<String> categories = ['Location', 'Hotels', 'Food', 'Adventure', 'Culture', 'Nature'];
 
   Future<void> obtenerCiudad() async {
     bool servicioHabilitado = await Geolocator.isLocationServiceEnabled();
@@ -95,6 +100,10 @@ class _HomeScreenState extends State<HomeScreen> {
     if (_ciudadSeleccionada == null || _ciudadSeleccionada!.isEmpty) {
       _ciudadSeleccionada = 'Near places';
     }
+
+    final lugaresFiltrados = _categoriaSeleccionada == 'Location'
+        ? popularPlaces
+        : popularPlaces.where((place) => place.category == _categoriaSeleccionada).toList();
 
     return SafeArea(
       child: Padding(
@@ -173,14 +182,26 @@ class _HomeScreenState extends State<HomeScreen> {
               const SizedBox(height: 20),
 
               // Categorías
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: const [
-                  CategoryChip(text: 'Location', selected: true),
-                  CategoryChip(text: 'Hotels'),
-                  CategoryChip(text: 'Food'),
-                  CategoryChip(text: 'Adventure'),
-                ],
+              SizedBox(
+                height: 40,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: categories.length,
+                  itemBuilder: (context, index) {
+                    final cat = categories[index];
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 8.0),
+                      child: GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _categoriaSeleccionada = cat;
+                          });
+                        },
+                        child: CategoryChip(text: cat, selected: _categoriaSeleccionada == cat),
+                      ),
+                    );
+                  },
+                ),
               ),
 
               const SizedBox(height: 20),
@@ -196,12 +217,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
               const SizedBox(height: 12),
 
-              // Lista horizontal de lugares
+              // Lista horizontal de lugares filtrados
               SizedBox(
                 height: 220,
                 child: ListView(
                   scrollDirection: Axis.horizontal,
-                  children: popularPlaces.map((place) => PopularPlaceCard(
+                  children: lugaresFiltrados.map((place) => PopularPlaceCard(
                     imagePath: place.imagePath,
                     title: place.title,
                     rating: place.rating,
