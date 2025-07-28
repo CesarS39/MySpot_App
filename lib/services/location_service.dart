@@ -34,6 +34,16 @@ import 'package:shared_preferences/shared_preferences.dart';  // Paquete para al
 */
 
 class LocationService {
+  static Future<String> obtenerPais() async {
+    try {
+      Position posicion = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.best);
+      List<Placemark> lugares = await placemarkFromCoordinates(posicion.latitude, posicion.longitude);
+      Placemark lugar = lugares[0];
+      return lugar.country ?? 'País desconocido';
+    } catch (e) {
+      return 'País desconocido';
+    }
+  }
   // Función para obtener la ciudad basándose en las coordenadas del usuario
   static Future<String> obtenerCiudad() async {
     // Verificar si los servicios de ubicación están habilitados en el dispositivo

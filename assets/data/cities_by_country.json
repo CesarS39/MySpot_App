@@ -1,0 +1,91 @@
+{
+  "México": [
+    "Ciudad de México",
+    "Guadalajara",
+    "Monterrey",
+    "Puebla",
+    "León",
+    "Querétaro",
+    "Toluca",
+    "Mérida",
+    "Tijuana",
+    "San Luis Potosí",
+    "Aguascalientes",
+    "Morelia",
+    "Tuxtla Gutiérrez",
+    "Villahermosa",
+    "Cancún",
+    "Acapulco",
+    "Cuernavaca",
+    "Hermosillo",
+    "Saltillo",
+    "Xalapa"
+  ],
+  "United States": [
+    "New York",
+    "Los Angeles",
+    "Chicago",
+    "Houston",
+    "Phoenix",
+    "Philadelphia",
+    "San Antonio",
+    "San Diego",
+    "Dallas",
+    "San Jose",
+    "San Francisco",
+    "Atlanta",
+    "Orlando",
+    "Miami",
+    "Seattle",
+    "Boston",
+    "Las Vegas",
+    "Austin",
+    "Denver",
+    "Minneapolis"
+  ],
+  "Colombia": [
+    "Bogotá",
+    "Medellín",
+    "Cali",
+    "Barranquilla",
+    "Cartagena"
+  ],
+  "España": [
+    "Madrid",
+    "Barcelona",
+    "Valencia",
+    "Sevilla",
+    "Zaragoza"
+  ],
+  "Argentina": [
+    "Buenos Aires",
+    "Córdoba",
+    "Rosario",
+    "Mendoza",
+    "La Plata"
+  ],
+  "United Kingdom": [
+    "London",
+    "Manchester",
+    "Birmingham",
+    "Liverpool",
+    "Leeds",
+    "Glasgow",
+    "Edinburgh",
+    "Bristol",
+    "Sheffield",
+    "Newcastle"
+  ],
+  "Canada": [
+    "Toronto",
+    "Vancouver",
+    "Montreal",
+    "Calgary",
+    "Ottawa",
+    "Edmonton",
+    "Winnipeg",
+    "Quebec City",
+    "Hamilton",
+    "Victoria"
+  ]
+}

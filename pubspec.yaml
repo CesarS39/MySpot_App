@@ -31,3 +31,5 @@ flutter:
     - lib/images/grutas.jpg
     - lib/images/mountain.jpg
     - assets/icon/app_icon.png
+    - lib/images/grutas.jpg
+    - assets/data/cities_by_country.json
