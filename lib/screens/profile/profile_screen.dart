@@ -4,6 +4,7 @@ import '../../services/auth_service.dart';
 import '../../widgets/text/title_text.dart';
 import '../../widgets/text/subtitle_text.dart';
 import '../../widgets/navigation/custom_bottom_navbar.dart';
+import '../place/place_detail_screen.dart';
 import '../auth/change_password_screen.dart';
 import '../auth/delete_account_screen.dart';
 import '../auth/update_username_screen.dart';
@@ -177,6 +178,37 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         Navigator.push(
                             context,
                             MaterialPageRoute(builder: (_) => const DeleteAccountScreen())
+                        );
+                      },
+                    ),
+                    _buildProfileCard(
+                      icon: Icons.place,
+                      iconColor: Colors.deepPurple,
+                      title: 'Probar pantalla de lugar',
+                      subtitle: 'Navegar con datos simulados',
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => PlaceDetailScreen(
+                              title: 'Grutas Tolantongo',
+                              imagePath: 'lib/images/grutas.jpg',
+                              rating: 4.8,
+                              isFavorite: true,
+                              category: 'Naturaleza',
+                              location: 'Hidalgo, México',
+                              reviewCount: 142,
+                              tags: ['Aventura', 'Familiar', 'Relax'],
+                              description: 'Un lugar espectacular con aguas termales y vistas hermosas.',
+                              galleryImages: [
+                                'lib/images/grutas.jpg',
+                                'lib/images/grutas.jpg',
+                                'lib/images/grutas.jpg',
+                              ],
+                              latitude: 20.6534,
+                              longitude: -98.9789,
+                            ),
+                          ),
                         );
                       },
                     ),

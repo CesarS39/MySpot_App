@@ -17,6 +17,12 @@ dependencies:
   firebase_auth: ^5.6.2
   shared_preferences: ^2.0.15
   google_maps_flutter: ^2.5.0 # Mapa de Google integrado
+  url_launcher: ^6.1.14  # Para abrir mapas
+  supabase: ^1.10.25
+  image_picker: ^1.1.1
+  mime: ^1.0.4
+  http: ^1.2.1
+  path: ^1.8.3
 
 dev_dependencies:
   flutter_test:

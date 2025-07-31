@@ -5,13 +5,24 @@ import 'services/location_service.dart'; // Importa el servicio de ubicación
 import 'screens/home/home_screen.dart'; // Importa la pantalla Home
 import 'screens/auth/register_screen3.dart'; // Importa la pantalla de Register
 import 'services/auth_layout.dart'; // Importa el layout para autenticación
+import 'package:supabase/supabase.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Inicializa Firebase
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  // Verificar si la ubicación ya está guardada, y si no, obtenerla y guardarla
+
+  // Inicializa Supabase
+  // Crea el cliente Supabase global (puedes moverlo a un servicio si lo prefieres)
+  final supabase = SupabaseClient(
+    'https://ftauvekkhkutiruepfkw.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ0YXV2ZWtraGt1dGlydWVwZmt3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM4NzkyNTksImV4cCI6MjA2OTQ1NTI1OX0.ef-4RxnGcSVjwSP1OtVSUb0meFOEIDQSLJl5E5oc7tM',
+  );
+
+  // Obtiene y guarda ubicación (si aplica)
   await _obtenerYGuardarUbicacion();
 
   runApp(const MyApp());

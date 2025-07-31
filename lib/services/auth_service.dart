@@ -1,7 +1,21 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
 ValueNotifier<AuthService> authService = ValueNotifier(AuthService());
+
+Future<void> createMongoUser(String idToken) async {
+  final response = await http.post(
+    Uri.parse("https://tu-backend.com/app/users"), // Cambia al dominio real
+    headers: {
+      "Authorization": "Bearer $idToken",
+    },
+  );
+
+  if (response.statusCode != 200) {
+    throw Exception('Error al crear usuario en MongoDB: ${response.body}');
+  }
+}
 
 class AuthService {
   final FirebaseAuth firebaseAuth = FirebaseAuth.instance;

@@ -54,7 +54,7 @@ class PlaceCard extends StatelessWidget {
                   width: double.infinity,
                   decoration: BoxDecoration(
                     image: DecorationImage(
-                      image: AssetImage(imagePath),
+                      image: NetworkImage(imagePath), // <- CORREGIDO AQUÍ
                       fit: BoxFit.cover,
                     ),
                   ),

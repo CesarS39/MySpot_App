@@ -33,11 +33,22 @@ class _RegisterScreen3State extends State<RegisterScreen3> {
   void register() async {
     if (formKey.currentState?.validate() ?? false) {
       try {
-        await authService.value.createAccount(
-          email: controllerEmail.text,
-          password: controllerPassword.text,
+        final userCredential = await authService.value.createAccount(
+          email: controllerEmail.text.trim(),
+          password: controllerPassword.text.trim(),
         );
 
+        // ✅ Obtener token de Firebase
+        final idToken = await userCredential.user!.getIdToken();
+        if (idToken == null) {
+          throw Exception('No se pudo obtener el token de autenticación');
+        }
+        await createMongoUser(idToken);
+
+        // ✅ Crear usuario en MongoDB
+        await createMongoUser(idToken);
+
+        // ✅ Refrescar AuthService y navegar
         authService.value = AuthService();
 
         Navigator.pushAndRemoveUntil(
@@ -48,6 +59,10 @@ class _RegisterScreen3State extends State<RegisterScreen3> {
       } on FirebaseAuthException catch (e) {
         setState(() {
           errorMessage = e.message ?? 'Error creating account';
+        });
+      } catch (e) {
+        setState(() {
+          errorMessage = 'Error al crear cuenta: $e';
         });
       }
     }

@@ -4,8 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
+import '../../models/category.dart';
 import '../../widgets/cards/PopularPlaceCard.dart';
 import '../../widgets/cards/place_card.dart';
+import '../../services/place_service.dart';
+
+List<Place> _popularPlaces = [];
+List<DetailedPlace> _allPlaces = [];
 
 class Place {
   final String title;
@@ -46,139 +51,6 @@ class DetailedPlace {
   });
 }
 
-const List<Place> popularPlaces = [
-  Place(title: 'Grutas de Tolantongo', imagePath: 'lib/images/grutas.jpg', rating: 4.5, isFavorite: true, category: 'Adventure'),
-  Place(title: 'Basílica de Guadalupe', imagePath: 'lib/images/grutas.jpg', rating: 4.7, isFavorite: false, category: 'Culture'),
-  Place(title: 'Xcaret Park', imagePath: 'lib/images/grutas.jpg', rating: 4.8, isFavorite: true, category: 'Nature'),
-  Place(title: 'Museo Frida Kahlo', imagePath: 'lib/images/grutas.jpg', rating: 4.6, isFavorite: false, category: 'Culture'),
-  Place(title: 'Chichén Itzá', imagePath: 'lib/images/grutas.jpg', rating: 4.9, isFavorite: true, category: 'Culture'),
-  Place(title: 'Cenote Ik Kil', imagePath: 'lib/images/grutas.jpg', rating: 4.4, isFavorite: false, category: 'Nature'),
-  Place(title: 'Teotihuacán', imagePath: 'lib/images/grutas.jpg', rating: 4.7, isFavorite: true, category: 'Culture'),
-];
-
-// Datos de ejemplo para el scroll infinito
-List<DetailedPlace> allPlaces = [
-  const DetailedPlace(
-    title: 'Restaurante La Cocina de María',
-    imagePath: 'lib/images/grutas.jpg',
-    rating: 4.2,
-    isFavorite: false,
-    category: 'Food',
-    location: 'Centro Histórico, Ciudad de México',
-    reviewCount: 245,
-    tags: ['Comida tradicional', 'Ambiente acogedor', 'Precio accesible'],
-  ),
-  const DetailedPlace(
-    title: 'Hotel Boutique Casa Colonial',
-    imagePath: 'lib/images/grutas.jpg',
-    rating: 4.6,
-    isFavorite: true,
-    category: 'Hotels',
-    location: 'San Miguel de Allende, Guanajuato',
-    reviewCount: 189,
-    tags: ['Arquitectura colonial', 'Servicio premium', 'Ubicación céntrica'],
-  ),
-  const DetailedPlace(
-    title: 'Cascadas de Agua Azul',
-    imagePath: 'lib/images/grutas.jpg',
-    rating: 4.8,
-    isFavorite: true,
-    category: 'Nature',
-    location: 'Tumbalá, Chiapas',
-    reviewCount: 567,
-    tags: ['Cascadas', 'Senderismo', 'Fotografía'],
-  ),
-  const DetailedPlace(
-    title: 'Tour en Globo Aerostático',
-    imagePath: 'lib/images/grutas.jpg',
-    rating: 4.9,
-    isFavorite: false,
-    category: 'Adventure',
-    location: 'Valle de Bravo, Estado de México',
-    reviewCount: 134,
-    tags: ['Vuelo panorámico', 'Amanecer', 'Experiencia única'],
-  ),
-  const DetailedPlace(
-    title: 'Museo de Antropología',
-    imagePath: 'lib/images/grutas.jpg',
-    rating: 4.7,
-    isFavorite: true,
-    category: 'Culture',
-    location: 'Chapultepec, Ciudad de México',
-    reviewCount: 892,
-    tags: ['Historia prehispánica', 'Arte', 'Educativo'],
-  ),
-  const DetailedPlace(
-    title: 'Café de Especialidad Origen',
-    imagePath: 'lib/images/grutas.jpg',
-    rating: 4.3,
-    isFavorite: false,
-    category: 'Food',
-    location: 'Roma Norte, Ciudad de México',
-    reviewCount: 156,
-    tags: ['Café artesanal', 'Wi-Fi', 'Ambiente hipster'],
-  ),
-  const DetailedPlace(
-    title: 'Playa Maroma Resort',
-    imagePath: 'lib/images/grutas.jpg',
-    rating: 4.5,
-    isFavorite: true,
-    category: 'Hotels',
-    location: 'Riviera Maya, Quintana Roo',
-    reviewCount: 423,
-    tags: ['Todo incluido', 'Playa privada', 'Spa'],
-  ),
-  const DetailedPlace(
-    title: 'Parque Nacional Pico de Orizaba',
-    imagePath: 'lib/images/grutas.jpg',
-    rating: 4.4,
-    isFavorite: false,
-    category: 'Nature',
-    location: 'Chalchicomula, Puebla',
-    reviewCount: 78,
-    tags: ['Montañismo', 'Flora y fauna', 'Camping'],
-  ),
-  const DetailedPlace(
-    title: 'Mercado de San Juan Gourmet',
-    imagePath: 'lib/images/grutas.jpg',
-    rating: 4.1,
-    isFavorite: false,
-    category: 'Food',
-    location: 'Centro Histórico, Ciudad de México',
-    reviewCount: 324,
-    tags: ['Comida exótica', 'Productos gourmet', 'Experiencia única'],
-  ),
-  const DetailedPlace(
-    title: 'Hotel Casa de Sierra Nevada',
-    imagePath: 'lib/images/grutas.jpg',
-    rating: 4.8,
-    isFavorite: true,
-    category: 'Hotels',
-    location: 'San Miguel de Allende, Guanajuato',
-    reviewCount: 156,
-    tags: ['Lujo', 'Spa', 'Arquitectura colonial'],
-  ),
-  const DetailedPlace(
-    title: 'Reserva de la Biosfera Sian Ka\'an',
-    imagePath: 'lib/images/grutas.jpg',
-    rating: 4.6,
-    isFavorite: true,
-    category: 'Nature',
-    location: 'Tulum, Quintana Roo',
-    reviewCount: 234,
-    tags: ['Patrimonio UNESCO', 'Ecoturismo', 'Vida silvestre'],
-  ),
-  const DetailedPlace(
-    title: 'Rafting en Río Filobobos',
-    imagePath: 'lib/images/grutas.jpg',
-    rating: 4.3,
-    isFavorite: false,
-    category: 'Adventure',
-    location: 'Tlapacoyan, Veracruz',
-    reviewCount: 89,
-    tags: ['Deportes extremos', 'Rafting', 'Adrenalina'],
-  ),
-];
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -195,9 +67,29 @@ class _HomeScreenState extends State<HomeScreen> {
   String? _ciudadSeleccionada = 'Near places';
 
   String _categoriaSeleccionada = 'Location';
-  final List<String> categories = ['Location', 'Hotels', 'Food', 'Adventure', 'Culture', 'Nature'];
+  List<String> categories = ['Location'];
+
+  void _mostrarError(BuildContext context, String mensaje) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(mensaje),
+        backgroundColor: Colors.red,
+        duration: const Duration(seconds: 3),
+      ),
+    );
+  }
 
   // Variables para scroll infinito
+  Future<void> _cargarCategorias() async {
+    try {
+      final List<CategoryModel> response = await PlaceService.fetchCategories();
+      setState(() {
+        categories = ['Location', ...response.map((cat) => cat.name)];
+      });
+    } catch (e) {
+      _mostrarError(context, 'Error al cargar categorías');
+    }
+  }
   final ScrollController _scrollController = ScrollController();
   List<DetailedPlace> _displayedPlaces = [];
   bool _isLoadingMore = false;
@@ -233,6 +125,7 @@ class _HomeScreenState extends State<HomeScreen> {
         _ubicacionAutorizada = true;
         _ciudadSeleccionada = 'Near places';
       });
+      cargarLugares();
     } catch (e) {
       setState(() {
         _ciudad = 'Error al obtener ubicación';
@@ -251,12 +144,9 @@ class _HomeScreenState extends State<HomeScreen> {
     // Simular carga de datos (reemplaza con tu lógica de API)
     Future.delayed(const Duration(seconds: 1), () {
       final startIndex = _currentPage * _placesPerPage;
-      final endIndex = (startIndex + _placesPerPage).clamp(0, allPlaces.length);
+      final endIndex = (startIndex + _placesPerPage).clamp(0, _allPlaces.length);
 
-      final newPlaces = List.generate(
-        endIndex - startIndex,
-            (index) => allPlaces[(startIndex + index) % allPlaces.length],
-      );
+      final newPlaces = _allPlaces.sublist(startIndex, endIndex);
 
       setState(() {
         _displayedPlaces.addAll(newPlaces);
@@ -266,10 +156,44 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  Future<void> cargarLugares() async {
+    try {
+      // Llamada sin ciudad → obtiene los lugares más populares globalmente
+      final populares = await PlaceService.fetchPopularPlaces();
+      final cercanos = await PlaceService.fetchNearbyPlaces(20.11, -98.77); // Puedes reemplazar por la ubicación real
+
+      setState(() {
+        _popularPlaces = populares.map((json) => Place(
+          title: json['name'],
+          imagePath: json['main_image_url'],
+          rating: (json['average_rating'] ?? 0.0).toDouble(),
+          isFavorite: false,
+          category: json['category'],
+        )).toList();
+
+        _allPlaces = cercanos.map((json) => DetailedPlace(
+          title: json['name'],
+          imagePath: json['main_image_url'],
+          rating: (json['average_rating'] ?? 0.0).toDouble(),
+          isFavorite: false,
+          category: json['category'],
+          location: '${json['location']['city']}, ${json['location']['state']}',
+          reviewCount: json['review_count'] ?? 0,
+          tags: List<String>.from(json['tags'] ?? []),
+        )).toList();
+
+        _displayedPlaces = [..._allPlaces.take(_placesPerPage)];
+      });
+    } catch (e) {
+      _mostrarError(context, 'Error al cargar lugares');
+    }
+  }
+
   @override
   void initState() {
     super.initState();
     obtenerCiudad();
+    _cargarCategorias();
     _loadMorePlaces(); // Cargar primeros lugares
 
     _scrollController.addListener(() {
@@ -286,10 +210,8 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   List<DetailedPlace> get _filteredPlaces {
-    if (_categoriaSeleccionada == 'Location') {
-      return _displayedPlaces;
-    }
-    return _displayedPlaces.where((place) => place.category == _categoriaSeleccionada).toList();
+    return _displayedPlaces.toSet().toList()
+      ..sort((a, b) => b.rating.compareTo(a.rating));
   }
 
   @override
@@ -301,8 +223,8 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     final lugaresFiltrados = _categoriaSeleccionada == 'Location'
-        ? popularPlaces
-        : popularPlaces.where((place) => place.category == _categoriaSeleccionada).toList();
+        ? _popularPlaces
+        : _popularPlaces.where((place) => place.category == _categoriaSeleccionada).toList();
 
     return SafeArea(
       child: CustomScrollView(
@@ -489,16 +411,20 @@ class CategoryChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      height: 36, // Altura consistente para centrar el texto
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
         color: selected ? Colors.blue : Colors.grey.shade200,
         borderRadius: BorderRadius.circular(20),
       ),
+      alignment: Alignment.center, // Centra el texto vertical y horizontalmente
       child: Text(
         text,
+        textAlign: TextAlign.center,
         style: TextStyle(
           color: selected ? Colors.white : Colors.black,
           fontWeight: FontWeight.w500,
+          fontSize: 14,
         ),
       ),
     );
