@@ -1,37 +1,18 @@
+
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../widgets/shared/ReviewWidget.dart';
 import 'package:myspot_02/models/review.dart';
-
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import '../../services/place_service.dart';
+import '../../services/place_notifier.dart'; // ✅ Importar el notifier
 
 class PlaceDetailScreen extends StatefulWidget {
-  final String title;
-  final String imagePath;
-  final double rating;
-  final bool isFavorite;
-  final String category;
-  final String location;
-  final int reviewCount;
-  final List<String> tags;
-  final String description;
-  final List<String> galleryImages;
-  final double latitude;
-  final double longitude;
-
+  final String id;
   const PlaceDetailScreen({
     super.key,
-    required this.title,
-    required this.imagePath,
-    required this.rating,
-    required this.isFavorite,
-    required this.category,
-    required this.location,
-    required this.reviewCount,
-    required this.tags,
-    required this.description,
-    required this.galleryImages,
-    required this.latitude,
-    required this.longitude,
+    required this.id,
   });
 
   @override
@@ -42,103 +23,127 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
   final PageController _pageController = PageController();
   int _currentImageIndex = 0;
   bool _isFavorite = false;
+  bool _isProcessingLike = false; // ✅ Estado para el procesamiento del like
   final ScrollController _scrollController = ScrollController();
   bool _showWriteReview = false;
 
-  // Datos de ejemplo para las reseñas
-  List<Review> _reviews = [
-    Review(
-      id: '1',
-      userId: 'user1',
-      userName: 'María González',
-      userAvatar: 'https://via.placeholder.com/50',
-      content: '¡Increíble experiencia! El lugar es exactamente como en las fotos. La comida estuvo deliciosa y el servicio fue excepcional. Definitivamente regresaré.',
-      rating: 5.0,
-      images: ['lib/images/grutas.jpg', 'lib/images/grutas.jpg'],
-      createdAt: DateTime.now().subtract(const Duration(days: 2)),
-      likesCount: 24,
-      isLiked: true,
-      isPinned: true,
-      replies: [
-        Review(
-          id: '1-1',
-          userId: 'user2',
-          userName: 'Carlos Ruiz',
-          userAvatar: 'https://via.placeholder.com/50',
-          content: '¡Totalmente de acuerdo! Fui la semana pasada y quedé fascinado.',
-          rating: null,
-          images: [],
-          createdAt: DateTime.now().subtract(const Duration(days: 1)),
-          likesCount: 5,
-          isLiked: false,
-          replies: [],
-        ),
-        Review(
-          id: '1-2',
-          userId: 'user3',
-          userName: 'Ana Martínez',
-          userAvatar: 'https://via.placeholder.com/50',
-          content: '¿Cuál plato recomiendan más? Voy el próximo fin de semana 😍',
-          rating: null,
-          images: [],
-          createdAt: DateTime.now().subtract(const Duration(hours: 12)),
-          likesCount: 2,
-          isLiked: true,
-          replies: [],
-        ),
-      ],
-    ),
-    Review(
-      id: '2',
-      userId: 'user4',
-      userName: 'Roberto Silva',
-      userAvatar: 'https://via.placeholder.com/50',
-      content: 'Muy buen lugar para pasar en familia. Los niños se divirtieron mucho y nosotros pudimos relajarnos. El único detalle es que puede ser un poco ruidoso en las horas pico.',
-      rating: 4.0,
-      images: ['lib/images/grutas.jpg'],
-      createdAt: DateTime.now().subtract(const Duration(days: 5)),
-      likesCount: 18,
-      isLiked: false,
-      replies: [
-        Review(
-          id: '2-1',
-          userId: 'user5',
-          userName: 'Laura Hernández',
-          userAvatar: 'https://via.placeholder.com/50',
-          content: '¿A qué hora recomiendan ir para evitar las multitudes?',
-          rating: null,
-          images: [],
-          createdAt: DateTime.now().subtract(const Duration(days: 4)),
-          likesCount: 3,
-          isLiked: false,
-          replies: [],
-        ),
-      ],
-    ),
-    Review(
-      id: '3',
-      userId: 'user6',
-      userName: 'Diego Morales',
-      userAvatar: 'https://via.placeholder.com/50',
-      content: 'Lugar espectacular para tomar fotos. La vista es impresionante y la atención al cliente es de primera. Sin duda uno de los mejores lugares que he visitado.',
-      rating: 4.8,
-      images: ['lib/images/grutas.jpg', 'lib/images/grutas.jpg', 'lib/images/grutas.jpg'],
-      createdAt: DateTime.now().subtract(const Duration(days: 7)),
-      likesCount: 31,
-      isLiked: true,
-      replies: [],
-    ),
-  ];
+  List<Review> _reviews = [];
+  bool _isLoadingReviews = true;
+
+  // Estado para los datos del lugar
+  String title = '';
+  String imagePath = '';
+  double rating = 0.0;
+  bool isFavorite = false;
+  String category = '';
+  String location = '';
+  int reviewCount = 0;
+  List<String> tags = [];
+  String description = '';
+  List<String> galleryImages = [];
+  double latitude = 0.0;
+  double longitude = 0.0;
+
+  // TODO: Reemplaza esto con tu método real para obtener el JWT del usuario autenticado
+  String get jwtToken => "YOUR_JWT_TOKEN";
 
   @override
   void initState() {
     super.initState();
-    _isFavorite = widget.isFavorite;
+    _loadPlaceDetails();
+  }
+
+  Future<void> _loadPlaceDetails() async {
+    try {
+      final data = await PlaceService.fetchPlaceDetails(widget.id);
+      setState(() {
+        title = data["title"] ?? '';
+        imagePath = data["main_image_url"] ?? '';
+        rating = (data["rating"] ?? 0).toDouble();
+        isFavorite = data["isFavorite"] ?? false;
+        _isFavorite = isFavorite; // ✅ Sincronizar ambos estados
+        category = data["category"] ?? '';
+        location = data["location"] ?? '';
+        reviewCount = data["reviewCount"] ?? 0;
+        tags = List<String>.from(data["tags"] ?? []);
+        description = data["description"] ?? '';
+        galleryImages = List<String>.from(data["galleryImages"] ?? []);
+        latitude = (data["latitude"] ?? 0.0).toDouble();
+        longitude = (data["longitude"] ?? 0.0).toDouble();
+      });
+
+      await _loadReviews();
+    } catch (e) {
+      print('Error al cargar detalles del lugar: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error al cargar la información del lugar')),
+      );
+    }
+  }
+
+  // ✅ Nueva función para manejar el toggle de like
+  Future<void> _toggleFavorite() async {
+    if (_isProcessingLike) return;
+
+    setState(() => _isProcessingLike = true);
+
+    try {
+      final newState = await PlaceService.togglePlaceLike(widget.id);
+
+      setState(() {
+        _isFavorite = newState;
+        isFavorite = newState;
+      });
+
+      // ✅ Notificar el cambio globalmente para sincronizar con otras pantallas
+      PlaceNotifier().notifyLikeChanged(widget.id, newState);
+
+      // ✅ Mostrar feedback al usuario
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(newState ? 'Agregado a favoritos' : 'Removido de favoritos'),
+          duration: const Duration(seconds: 1),
+          backgroundColor: newState ? Colors.green : Colors.grey,
+        ),
+      );
+
+    } catch (e) {
+      print('Error al actualizar favorito: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Error al actualizar favorito'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      setState(() => _isProcessingLike = false);
+    }
+  }
+
+  Future<void> _loadReviews() async {
+    try {
+      final data = await PlaceService.fetchPlaceReviews(widget.id);
+
+      if (data is Map<String, dynamic> && data['results'] is List) {
+        final List<dynamic> results = data['results'];
+
+        setState(() {
+          _reviews = results.map((r) => Review.fromJson(r)).toList();
+          _isLoadingReviews = false;
+        });
+      } else {
+        print('Formato inesperado en respuesta de reviews: $data');
+        setState(() => _isLoadingReviews = false);
+      }
+    } catch (e) {
+      print('Error al cargar reseñas: $e');
+      setState(() => _isLoadingReviews = false);
+    }
   }
 
   Future<void> _openInMaps() async {
-    final String googleMapsUrl = 'https://www.google.com/maps/search/?api=1&query=${widget.latitude},${widget.longitude}';
-    final String appleMapsUrl = 'https://maps.apple.com/?q=${widget.latitude},${widget.longitude}';
+    final String googleMapsUrl = 'https://www.google.com/maps/search/?api=1&query=$latitude,$longitude';
+    final String appleMapsUrl = 'https://maps.apple.com/?q=$latitude,$longitude';
 
     try {
       if (Theme.of(context).platform == TargetPlatform.iOS) {
@@ -188,15 +193,20 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                   shape: BoxShape.circle,
                 ),
                 child: IconButton(
-                  icon: Icon(
+                  icon: _isProcessingLike
+                      ? SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.grey.shade600),
+                    ),
+                  )
+                      : Icon(
                     _isFavorite ? Icons.favorite : Icons.favorite_border,
                     color: _isFavorite ? Colors.red : Colors.black,
                   ),
-                  onPressed: () {
-                    setState(() {
-                      _isFavorite = !_isFavorite;
-                    });
-                  },
+                  onPressed: _isProcessingLike ? null : _toggleFavorite, // ✅ Usar la nueva función
                 ),
               ),
             ],
@@ -211,12 +221,14 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                         _currentImageIndex = index;
                       });
                     },
-                    itemCount: widget.galleryImages.length,
+                    itemCount: galleryImages.length,
                     itemBuilder: (context, index) {
                       return Container(
                         decoration: BoxDecoration(
                           image: DecorationImage(
-                            image: AssetImage(widget.galleryImages[index]),
+                            image: galleryImages.isNotEmpty
+                                ? NetworkImage(galleryImages[index])
+                                : const AssetImage('assets/placeholder.png') as ImageProvider,
                             fit: BoxFit.cover,
                           ),
                         ),
@@ -225,7 +237,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                   ),
 
                   // Indicador de páginas
-                  if (widget.galleryImages.length > 1)
+                  if (galleryImages.length > 1)
                     Positioned(
                       bottom: 20,
                       left: 0,
@@ -233,7 +245,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: List.generate(
-                          widget.galleryImages.length,
+                          galleryImages.length,
                               (index) => Container(
                             margin: const EdgeInsets.symmetric(horizontal: 2),
                             width: 8,
@@ -294,7 +306,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                                 border: Border.all(color: Colors.blue.withOpacity(0.3)),
                               ),
                               child: Text(
-                                widget.category,
+                                category,
                                 style: const TextStyle(
                                   color: Colors.blue,
                                   fontWeight: FontWeight.w600,
@@ -316,7 +328,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                                   Icon(Icons.star, color: Colors.orange.shade600, size: 16),
                                   const SizedBox(width: 4),
                                   Text(
-                                    '${widget.rating}',
+                                    '$rating',
                                     style: TextStyle(
                                       color: Colors.orange.shade700,
                                       fontWeight: FontWeight.w600,
@@ -325,7 +337,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                                   ),
                                   const SizedBox(width: 4),
                                   Text(
-                                    '(${widget.reviewCount})',
+                                    '($reviewCount)',
                                     style: TextStyle(
                                       color: Colors.orange.shade600,
                                       fontSize: 12,
@@ -341,7 +353,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
 
                         // Título
                         Text(
-                          widget.title,
+                          title,
                           style: const TextStyle(
                             fontSize: 28,
                             fontWeight: FontWeight.bold,
@@ -358,7 +370,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                             const SizedBox(width: 6),
                             Expanded(
                               child: Text(
-                                widget.location,
+                                location,
                                 style: TextStyle(
                                   color: Colors.grey.shade700,
                                   fontSize: 16,
@@ -397,11 +409,11 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                         const SizedBox(height: 16),
 
                         // Tags
-                        if (widget.tags.isNotEmpty)
+                        if (tags.isNotEmpty)
                           Wrap(
                             spacing: 8,
                             runSpacing: 8,
-                            children: widget.tags.map((tag) => Container(
+                            children: tags.map((tag) => Container(
                               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                               decoration: BoxDecoration(
                                 color: Colors.grey.shade100,
@@ -432,7 +444,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                         ),
                         const SizedBox(height: 12),
                         Text(
-                          widget.description,
+                          description,
                           style: TextStyle(
                             fontSize: 16,
                             height: 1.6,
@@ -509,23 +521,33 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
           ),
 
           // Lista de reseñas
-          SliverList(
-            delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                final review = _reviews[index];
-                return ReviewWidget(
-                  review: review,
-                  onLike: (reviewId) {
-                    // TODO: Implementar lógica de like
-                  },
-                  onReply: (reviewId) {
-                    // TODO: Implementar lógica de respuesta
-                  },
-                );
-              },
-              childCount: _reviews.length,
+          if (_isLoadingReviews)
+            SliverToBoxAdapter(
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 32),
+                  child: CircularProgressIndicator(),
+                ),
+              ),
+            )
+          else
+            SliverList(
+              delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                  final review = _reviews[index];
+                  return ReviewWidget(
+                    review: review,
+                    onLike: (reviewId) {
+                      // TODO: Implementar lógica de like
+                    },
+                    onReply: (reviewId) {
+                      // TODO: Implementar lógica de respuesta
+                    },
+                  );
+                },
+                childCount: _reviews.length,
+              ),
             ),
-          ),
 
           // Espaciado final
           const SliverToBoxAdapter(

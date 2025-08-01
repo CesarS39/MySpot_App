@@ -27,6 +27,8 @@ class _ReviewWidgetState extends State<ReviewWidget> with TickerProviderStateMix
   final TextEditingController _replyController = TextEditingController();
   late AnimationController _animationController;
   late Animation<double> _expandAnimation;
+  late bool _isLiked;
+  late int _likesCount;
 
   @override
   void initState() {
@@ -39,6 +41,8 @@ class _ReviewWidgetState extends State<ReviewWidget> with TickerProviderStateMix
       parent: _animationController,
       curve: Curves.easeInOut,
     );
+    _isLiked = widget.review.isLiked;
+    _likesCount = widget.review.likesCount;
   }
 
   @override
@@ -249,11 +253,11 @@ class _ReviewWidgetState extends State<ReviewWidget> with TickerProviderStateMix
                       GestureDetector(
                         onTap: () {
                           setState(() {
-                            widget.review.isLiked = !widget.review.isLiked;
-                            if (widget.review.isLiked) {
-                              widget.review.likesCount++;
+                            _isLiked = !_isLiked;
+                            if (_isLiked) {
+                              _likesCount++;
                             } else {
-                              widget.review.likesCount--;
+                              _likesCount--;
                             }
                           });
                           widget.onLike(widget.review.id);
@@ -261,12 +265,12 @@ class _ReviewWidgetState extends State<ReviewWidget> with TickerProviderStateMix
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                           decoration: BoxDecoration(
-                            color: widget.review.isLiked
+                            color: _isLiked
                                 ? Colors.red.shade50
                                 : Colors.grey.shade50,
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(
-                              color: widget.review.isLiked
+                              color: _isLiked
                                   ? Colors.red.shade200
                                   : Colors.grey.shade200,
                             ),
@@ -275,18 +279,18 @@ class _ReviewWidgetState extends State<ReviewWidget> with TickerProviderStateMix
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(
-                                widget.review.isLiked ? Icons.favorite : Icons.favorite_border,
+                                _isLiked ? Icons.favorite : Icons.favorite_border,
                                 size: 16,
-                                color: widget.review.isLiked ? Colors.red : Colors.grey.shade600,
+                                color: _isLiked ? Colors.red : Colors.grey.shade600,
                               ),
-                              if (widget.review.likesCount > 0) ...[
+                              if (_likesCount > 0) ...[
                                 const SizedBox(width: 4),
                                 Text(
-                                  '${widget.review.likesCount}',
+                                  '$_likesCount',
                                   style: TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w500,
-                                    color: widget.review.isLiked ? Colors.red : Colors.grey.shade600,
+                                    color: _isLiked ? Colors.red : Colors.grey.shade600,
                                   ),
                                 ),
                               ],
@@ -539,6 +543,15 @@ class ReviewWithReplies extends StatefulWidget {
 
 class _ReviewWithRepliesState extends State<ReviewWithReplies> {
   bool _showReplies = false;
+  late bool _isLiked;
+  late int _likesCount;
+
+  @override
+  void initState() {
+    super.initState();
+    _isLiked = widget.review.isLiked;
+    _likesCount = widget.review.likesCount;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -697,11 +710,11 @@ class _ReviewWithRepliesState extends State<ReviewWithReplies> {
                           GestureDetector(
                             onTap: () {
                               setState(() {
-                                widget.review.isLiked = !widget.review.isLiked;
-                                if (widget.review.isLiked) {
-                                  widget.review.likesCount++;
+                                _isLiked = !_isLiked;
+                                if (_isLiked) {
+                                  _likesCount++;
                                 } else {
-                                  widget.review.likesCount--;
+                                  _likesCount--;
                                 }
                               });
                               widget.onLike(widget.review.id);
@@ -709,28 +722,28 @@ class _ReviewWithRepliesState extends State<ReviewWithReplies> {
                             child: Container(
                               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                               decoration: BoxDecoration(
-                                color: widget.review.isLiked ? Colors.red.shade50 : Colors.grey.shade50,
+                                color: _isLiked ? Colors.red.shade50 : Colors.grey.shade50,
                                 borderRadius: BorderRadius.circular(20),
                                 border: Border.all(
-                                  color: widget.review.isLiked ? Colors.red.shade200 : Colors.grey.shade200,
+                                  color: _isLiked ? Colors.red.shade200 : Colors.grey.shade200,
                                 ),
                               ),
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Icon(
-                                    widget.review.isLiked ? Icons.favorite : Icons.favorite_border,
+                                    _isLiked ? Icons.favorite : Icons.favorite_border,
                                     size: 16,
-                                    color: widget.review.isLiked ? Colors.red : Colors.grey.shade600,
+                                    color: _isLiked ? Colors.red : Colors.grey.shade600,
                                   ),
-                                  if (widget.review.likesCount > 0) ...[
+                                  if (_likesCount > 0) ...[
                                     const SizedBox(width: 4),
                                     Text(
-                                      '${widget.review.likesCount}',
+                                      '$_likesCount',
                                       style: TextStyle(
                                         fontSize: 12,
                                         fontWeight: FontWeight.w500,
-                                        color: widget.review.isLiked ? Colors.red : Colors.grey.shade600,
+                                        color: _isLiked ? Colors.red : Colors.grey.shade600,
                                       ),
                                     ),
                                   ],

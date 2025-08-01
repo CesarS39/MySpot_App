@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'home_screen.dart';
 import '../profile/profile_screen.dart';
@@ -29,14 +30,23 @@ class DummyScreen extends StatelessWidget {
           title: Text(title),
           backgroundColor: Colors.blue.shade100,
         ),
-        body: Center(
-          child: Text(
-            'Contenido de $title',
-            style: TextStyle(
-              fontSize: 18,
-              color: Colors.blue.shade800,
-            ),
-          ),
+        body: FutureBuilder<String?>(
+          future: FirebaseAuth.instance.currentUser?.getIdToken(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            } else if (snapshot.hasError || !snapshot.hasData) {
+              return const Center(child: Text('No se pudo obtener el token.'));
+            } else {
+              return Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: SelectableText(
+                  'Token JWT:\n\n${snapshot.data}',
+                  style: const TextStyle(fontSize: 16, color: Colors.black87),
+                ),
+              );
+            }
+          },
         ),
       ),
     );

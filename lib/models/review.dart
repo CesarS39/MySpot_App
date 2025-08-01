@@ -7,10 +7,9 @@ class Review {
   final double? rating;
   final List<String> images;
   final DateTime createdAt;
-  int likesCount;
-  bool isLiked;
+  final int likesCount;
+  final bool isLiked;
   final List<Review> replies;
-  final bool isPinned;
 
   Review({
     required this.id,
@@ -18,12 +17,29 @@ class Review {
     required this.userName,
     required this.userAvatar,
     required this.content,
-    this.rating,
+    required this.rating,
     required this.images,
     required this.createdAt,
     required this.likesCount,
     required this.isLiked,
     required this.replies,
-    this.isPinned = false,
   });
+
+  factory Review.fromJson(Map<String, dynamic> json) {
+    return Review(
+      id: json["id"],
+      userId: json["userId"],
+      userName: json["userName"],
+      userAvatar: json["userAvatar"],
+      content: json["content"],
+      rating: json["rating"]?.toDouble(),
+      images: List<String>.from(json["images"] ?? []),
+      createdAt: DateTime.parse(json["createdAt"]),
+      likesCount: json["likesCount"] ?? 0,
+      isLiked: json["isLiked"] ?? false,
+      replies: (json["replies"] as List<dynamic>? ?? [])
+          .map((reply) => Review.fromJson(reply))
+          .toList(),
+    );
+  }
 }

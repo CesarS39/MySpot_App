@@ -187,28 +187,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       title: 'Probar pantalla de lugar',
                       subtitle: 'Navegar con datos simulados',
                       onTap: () {
-                        Navigator.push(
+                        Navigator.pushNamed(
                           context,
-                          MaterialPageRoute(
-                            builder: (_) => PlaceDetailScreen(
-                              title: 'Grutas Tolantongo',
-                              imagePath: 'lib/images/grutas.jpg',
-                              rating: 4.8,
-                              isFavorite: true,
-                              category: 'Naturaleza',
-                              location: 'Hidalgo, México',
-                              reviewCount: 142,
-                              tags: ['Aventura', 'Familiar', 'Relax'],
-                              description: 'Un lugar espectacular con aguas termales y vistas hermosas.',
-                              galleryImages: [
-                                'lib/images/grutas.jpg',
-                                'lib/images/grutas.jpg',
-                                'lib/images/grutas.jpg',
-                              ],
-                              latitude: 20.6534,
-                              longitude: -98.9789,
-                            ),
-                          ),
+                          '/place_detail',
+                          arguments: '688a496ad6994bc8d79f3673',
                         );
                       },
                     ),

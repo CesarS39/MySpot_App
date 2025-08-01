@@ -8,28 +8,36 @@ import '../../models/category.dart';
 import '../../widgets/cards/PopularPlaceCard.dart';
 import '../../widgets/cards/place_card.dart';
 import '../../services/place_service.dart';
+import '../../screens/place/place_detail_screen.dart';
+import '../../services/place_notifier.dart';
+
 
 List<Place> _popularPlaces = [];
 List<DetailedPlace> _allPlaces = [];
 
 class Place {
+  final String id;
   final String title;
   final String imagePath;
   final double rating;
   final bool isFavorite;
   final String category;
+  final bool isLiked;
 
   const Place({
+    required this.id,
     required this.title,
     required this.imagePath,
     required this.rating,
     required this.isFavorite,
     required this.category,
+    required this.isLiked,
   });
 }
 
 // Nuevo modelo para lugares del scroll infinito
 class DetailedPlace {
+  final String id;
   final String title;
   final String imagePath;
   final double rating;
@@ -38,8 +46,10 @@ class DetailedPlace {
   final String location;
   final int reviewCount;
   final List<String> tags;
+  final bool isLiked;
 
   const DetailedPlace({
+    required this.id,
     required this.title,
     required this.imagePath,
     required this.rating,
@@ -48,6 +58,7 @@ class DetailedPlace {
     required this.location,
     required this.reviewCount,
     required this.tags,
+    required this.isLiked,
   });
 }
 
@@ -137,22 +148,37 @@ class _HomeScreenState extends State<HomeScreen> {
   void _loadMorePlaces() {
     if (_isLoadingMore) return;
 
+    final startIndex = _currentPage * _placesPerPage;
+
+    // ✅ Verificar si ya se cargaron todos los lugares
+    if (startIndex >= _allPlaces.length) {
+      return; // No hay más lugares que cargar
+    }
+
     setState(() {
       _isLoadingMore = true;
     });
 
     // Simular carga de datos (reemplaza con tu lógica de API)
     Future.delayed(const Duration(seconds: 1), () {
-      final startIndex = _currentPage * _placesPerPage;
+      if (!mounted) return; // ✅ Verificar si el widget sigue montado
+
       final endIndex = (startIndex + _placesPerPage).clamp(0, _allPlaces.length);
 
-      final newPlaces = _allPlaces.sublist(startIndex, endIndex);
+      // ✅ Solo continuar si hay lugares nuevos que agregar
+      if (startIndex < _allPlaces.length) {
+        final newPlaces = _allPlaces.sublist(startIndex, endIndex);
 
-      setState(() {
-        _displayedPlaces.addAll(newPlaces);
-        _currentPage++;
-        _isLoadingMore = false;
-      });
+        setState(() {
+          _displayedPlaces.addAll(newPlaces);
+          _currentPage++;
+          _isLoadingMore = false;
+        });
+      } else {
+        setState(() {
+          _isLoadingMore = false;
+        });
+      }
     });
   }
 
@@ -164,25 +190,39 @@ class _HomeScreenState extends State<HomeScreen> {
 
       setState(() {
         _popularPlaces = populares.map((json) => Place(
+          id: json['id'],
           title: json['name'],
           imagePath: json['main_image_url'],
           rating: (json['average_rating'] ?? 0.0).toDouble(),
-          isFavorite: false,
+          isFavorite: json['isLiked'] ?? false,
           category: json['category'],
+          isLiked: json['isLiked'] ?? false,
         )).toList();
 
         _allPlaces = cercanos.map((json) => DetailedPlace(
+          id: json['id'],
           title: json['name'],
           imagePath: json['main_image_url'],
           rating: (json['average_rating'] ?? 0.0).toDouble(),
-          isFavorite: false,
+          isFavorite: json['isLiked'] ?? false,
           category: json['category'],
           location: '${json['location']['city']}, ${json['location']['state']}',
           reviewCount: json['review_count'] ?? 0,
           tags: List<String>.from(json['tags'] ?? []),
+          isLiked: json['isLiked'] ?? false,
         )).toList();
 
-        _displayedPlaces = [..._allPlaces.take(_placesPerPage)];
+        // ✅ Reiniciar las variables de paginación
+        _currentPage = 0;
+        _displayedPlaces.clear();
+
+        // ✅ Cargar la primera página
+        final firstPageSize = _placesPerPage.clamp(0, _allPlaces.length);
+        _displayedPlaces = [..._allPlaces.take(firstPageSize)];
+
+        if (_displayedPlaces.isNotEmpty) {
+          _currentPage = 1; // Ya cargamos la primera página
+        }
       });
     } catch (e) {
       _mostrarError(context, 'Error al cargar lugares');
@@ -194,10 +234,15 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     obtenerCiudad();
     _cargarCategorias();
-    _loadMorePlaces(); // Cargar primeros lugares
+
+    // ✅ NO llamar _loadMorePlaces aquí, se carga en cargarLugares()
+    // _loadMorePlaces(); // ❌ Remover esta línea
 
     _scrollController.addListener(() {
-      if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+      // ✅ Verificar que no esté ya cargando y que haya más contenido
+      if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200 &&
+          !_isLoadingMore &&
+          _displayedPlaces.length < _allPlaces.length) {
         _loadMorePlaces();
       }
     });
@@ -210,8 +255,67 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   List<DetailedPlace> get _filteredPlaces {
-    return _displayedPlaces.toSet().toList()
-      ..sort((a, b) => b.rating.compareTo(a.rating));
+    // ✅ Crear un Map para garantizar unicidad por ID
+    final Map<String, DetailedPlace> uniquePlacesMap = {};
+
+    for (final place in _displayedPlaces) {
+      uniquePlacesMap[place.id] = place;
+    }
+
+    // Convertir a lista y ordenar
+    final List<DetailedPlace> uniquePlaces = uniquePlacesMap.values.toList();
+    uniquePlaces.sort((a, b) => b.rating.compareTo(a.rating));
+
+    return uniquePlaces;
+  }
+
+  // Manejar el cambio de like/favorite
+  // Función corregida para manejar el cambio de like/favorite
+  // Modificar la función _toggleLike en HomeScreen
+  Future<void> _toggleLike(String placeId, bool currentValue) async {
+    try {
+      // Solo pasa el ID, el método devuelve el nuevo estado
+      bool newState = await PlaceService.togglePlaceLike(placeId);
+
+      setState(() {
+        // Actualizar en lugares populares
+        final indexPopular = _popularPlaces.indexWhere((p) => p.id == placeId);
+        if (indexPopular != -1) {
+          _popularPlaces[indexPopular] = Place(
+            id: _popularPlaces[indexPopular].id,
+            title: _popularPlaces[indexPopular].title,
+            imagePath: _popularPlaces[indexPopular].imagePath,
+            rating: _popularPlaces[indexPopular].rating,
+            isFavorite: newState,
+            category: _popularPlaces[indexPopular].category,
+            isLiked: newState,
+          );
+        }
+
+        // Actualizar en lugares detallados
+        final indexDetailed = _displayedPlaces.indexWhere((p) => p.id == placeId);
+        if (indexDetailed != -1) {
+          _displayedPlaces[indexDetailed] = DetailedPlace(
+            id: _displayedPlaces[indexDetailed].id,
+            title: _displayedPlaces[indexDetailed].title,
+            imagePath: _displayedPlaces[indexDetailed].imagePath,
+            rating: _displayedPlaces[indexDetailed].rating,
+            isFavorite: newState,
+            category: _displayedPlaces[indexDetailed].category,
+            location: _displayedPlaces[indexDetailed].location,
+            reviewCount: _displayedPlaces[indexDetailed].reviewCount,
+            tags: _displayedPlaces[indexDetailed].tags,
+            isLiked: newState,
+          );
+        }
+      });
+
+      // ✅ NUEVO: Notificar el cambio globalmente
+      PlaceNotifier().notifyLikeChanged(placeId, newState);
+
+    } catch (e) {
+      _mostrarError(context, 'No se pudo actualizar el favorito');
+    }
   }
 
   @override
@@ -347,10 +451,12 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: ListView(
                       scrollDirection: Axis.horizontal,
                       children: lugaresFiltrados.map((place) => PopularPlaceCard(
+                        id: place.id,
                         imagePath: place.imagePath,
                         title: place.title,
                         rating: place.rating,
-                        isFavorite: place.isFavorite,
+                        isFavorite: place.isLiked,
+                        onFavoriteToggle: () => _toggleLike(place.id, place.isLiked),
                       )).toList(),
                     ),
                   ),
@@ -368,20 +474,31 @@ class _HomeScreenState extends State<HomeScreen> {
           // Lista vertical con scroll infinito usando el widget importado
           SliverList(
             delegate: SliverChildBuilderDelegate(
-                  (context, index) {
+              (context, index) {
                 final filteredPlaces = _filteredPlaces;
 
                 if (index < filteredPlaces.length) {
                   final place = filteredPlaces[index];
-                  return PlaceCard(
-                    imagePath: place.imagePath,
-                    title: place.title,
-                    category: place.category,
-                    rating: place.rating,
-                    isFavorite: place.isFavorite,
-                    location: place.location,
-                    reviewCount: place.reviewCount,
-                    tags: place.tags,
+                  return GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => PlaceDetailScreen(id: place.id),
+                        ),
+                      );
+                    },
+                    child: PlaceCard(
+                      id: place.id,
+                      imagePath: place.imagePath,
+                      title: place.title,
+                      category: place.category,
+                      rating: place.rating,
+                      isFavorite: place.isFavorite,
+                      location: place.location,
+                      reviewCount: place.reviewCount,
+                      tags: place.tags,
+                    ),
                   );
                 } else if (index == filteredPlaces.length && _isLoadingMore) {
                   return Container(
