@@ -9,7 +9,7 @@ Future<String?> getFirebaseToken() async {
 }
 
 class PlaceService {
-  static const String baseUrl = "http://192.168.100.105:8000"; // IP de tu Mac
+  static const String baseUrl = "http://172.20.10.2:8000"; // IP de tu Mac
 
   static Future<List<Map<String, dynamic>>> fetchPopularPlaces() async {
     final token = await getFirebaseToken();

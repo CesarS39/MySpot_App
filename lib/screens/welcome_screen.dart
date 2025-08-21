@@ -88,47 +88,16 @@ class WelcomeScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 24),
 
-                  // Botón Start
-                  CustomButton(
-                    text: 'Start',
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => RegisterScreen3()),
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Botón Login
-                  CustomButton(
-                    text: 'Login',
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const LoginScreen()),
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 24),
-
-                  // Divider y "Or"
-                  const DividerWithText(text: "Or"),
-                  const SizedBox(height: 24),
-
-                  // Botón para verificar el estado de login
-                  CustomButton(
-                    text: 'Verificar estado de login',
-                    onPressed: () {
-                      final user = FirebaseAuth.instance.currentUser;
-                      final message = user != null
-                          ? 'Estás logeado como ${user.email}'
-                          : 'No estás logeado';
-
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(message)),
-                      );
-                    },
+                  Center(
+                    child: CustomButton(
+                      text: 'Welcome',
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const LoginScreen()),
+                        );
+                      },
+                    ),
                   ),
                 ],
               ),
